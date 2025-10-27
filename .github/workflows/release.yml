@@ -1,0 +1,70 @@
+name: Protobuf Codegen & Publish
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@schererja"
+
+      - name: Install Buf
+        uses: bufbuild/buf-setup-action@v1
+        with:
+          version: "1.57.0"
+
+      - name: Generate Protobuf code
+        run: buf generate --template buf.gen.yaml
+
+      - name: Commit generated code
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add gen/go gen/js || true
+
+          if git diff --cached --quiet; then
+            echo "No changes in generated code"
+          else
+            git commit -m "chore: update generated code"
+            git push origin HEAD:main
+          fi
+      - name: Extract version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+        # GITHUB_REF_NAME = v0.6.0 → VERSION=0.6.0
+
+      - name: Prepare package.json for TS client
+        working-directory: gen/js
+        run: |
+          echo '{
+            "name": "@schererja/yggdrasil-protos",
+            "version": "'$VERSION'",
+            "main": "index.js",
+            "types": "index.d.ts",
+            "license": "MIT"
+          }' > package.json
+
+      - name: Publish JS client to GitHub Packages
+        working-directory: gen/js
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

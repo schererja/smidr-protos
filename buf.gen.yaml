@@ -1,0 +1,25 @@
+version: v2
+managed:
+  enabled: true
+  override:
+    - file_option: go_package_prefix
+      value: github.com/schererja/smidr-protos/gen/go
+plugins:
+  # Go stubs
+  - remote: buf.build/protocolbuffers/go
+    out: gen/go
+    opt:
+      - paths=source_relative
+  - remote: buf.build/grpc/go
+    out: gen/go
+    opt:
+      - paths=source_relative
+
+  # TypeScript for Node (grpc-js) using ts-proto
+  - remote: buf.build/community/stephenh-ts-proto
+    out: gen/ts
+    opt:
+      - outputServices=grpc-js
+      - env=node
+      - esModuleInterop=true
+      - useExactTypes=false
