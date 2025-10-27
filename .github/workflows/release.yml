@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: "20"
           registry-url: "https://npm.pkg.github.com"
-          scope: "@Intrik8-Labs"
+          scope: "@schererja"
 
       - name: Install Buf
         uses: bufbuild/buf-setup-action@v1
@@ -47,16 +47,17 @@ jobs:
             git commit -m "chore: update generated code"
             git push origin HEAD:main
           fi
+
       - name: Extract version from tag
         id: get_version
         run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
-        # GITHUB_REF_NAME = v0.6.0 → VERSION=0.6.0
+        # e.g. GITHUB_REF_NAME = v0.6.0 → VERSION=0.6.0
 
       - name: Prepare package.json for TS client
         working-directory: gen/js
         run: |
           echo '{
-            "name": "@Intrik8-Labs/yggdrasil-protos",
+            "name": "@schererja/yggdrasil-protos",
             "version": "'$VERSION'",
             "main": "index.js",
             "types": "index.d.ts",
