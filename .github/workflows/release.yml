@@ -57,7 +57,7 @@ jobs:
         working-directory: gen/js
         run: |
           echo '{
-            "name": "@schererja/yggdrasil-protos",
+            "name": "@schererja/smidr-protos",
             "version": "'$VERSION'",
             "main": "index.js",
             "types": "index.d.ts",
