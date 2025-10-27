@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: "20"
           registry-url: "https://npm.pkg.github.com"
-          scope: "@schererja"
+          scope: "@intrik8labs"
 
       - name: Install Buf
         uses: bufbuild/buf-setup-action@v1
@@ -56,7 +56,7 @@ jobs:
         working-directory: gen/js
         run: |
           echo '{
-            "name": "@schererja/yggdrasil-protos",
+            "name": "@intrik8labs/yggdrasil-protos",
             "version": "'$VERSION'",
             "main": "index.js",
             "types": "index.d.ts",
