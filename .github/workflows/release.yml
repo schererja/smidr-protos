@@ -59,8 +59,8 @@ jobs:
           echo '{
             "name": "@schererja/smidr-protos",
             "version": "'$VERSION'",
-            "main": "index.js",
-            "types": "index.d.ts",
+            "main": "./smidr_pb.js",
+            "types": "./smidr_pb.d.ts",
             "license": "MIT"
           }' > package.json
 
