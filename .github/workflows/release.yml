@@ -59,6 +59,7 @@ jobs:
           echo '{
             "name": "@schererja/smidr-protos",
             "version": "'$VERSION'",
+            "type": "commonjs",
             "main": "./smidr_pb.js",
             "types": "./smidr_pb.d.ts",
             "license": "MIT"
