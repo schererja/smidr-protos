@@ -62,7 +62,10 @@ jobs:
             "type": "commonjs",
             "main": "./smidr_pb.js",
             "types": "./smidr_pb.d.ts",
-            "license": "MIT"
+            "license": "MIT",
+            "dependencies": {
+              "google-protobuf": "^3.21.2"
+            }
           }' > package.json
 
       - name: Publish JS client to GitHub Packages
