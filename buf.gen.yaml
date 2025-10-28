@@ -8,10 +8,16 @@ plugins:
     out: gen/go
     opt:
       - paths=source_relative
+
+  # Generate JavaScript (CommonJS + binary format)
   - remote: buf.build/protocolbuffers/js
     out: gen/js
+    opt:
+      - import_style=commonjs,binary
+
+  # Generate gRPC-Web TypeScript definitions compatible with the JS above
   - remote: buf.build/grpc/web
     out: gen/js
     opt:
-      - import_style=typescript
+      - import_style=commonjs+dts
       - mode=grpcwebtext
