@@ -23,6 +23,18 @@ service Smidr {
 
   // ListBuilds lists all builds (active and completed)
   rpc ListBuilds(ListBuildsRequest) returns (BuildsList);
+
+  // GetBuild retrieves detailed information about a specific build
+  rpc GetBuild(GetBuildRequest) returns (BuildDetails);
+
+  // DeleteBuild soft-deletes a build (marks as deleted)
+  rpc DeleteBuild(DeleteBuildRequest) returns (DeleteBuildResponse);
+
+  // PurgeBuilds permanently removes deleted builds from database and filesystem
+  rpc PurgeBuilds(PurgeBuildsRequest) returns (PurgeBuildsResponse);
+
+  // GetBuildArtifacts retrieves all artifacts for a specific build
+  rpc GetBuildArtifacts(GetBuildArtifactsRequest) returns (BuildArtifactsList);
 }
 
 // StartBuildRequest contains the configuration for starting a new build
@@ -61,11 +73,53 @@ message BuildStatus {
   int64 started_at = 6;  // Unix timestamp
   int64 completed_at = 7; // Unix timestamp
   string config_path = 8;
+  string customer = 9;
+  bool deleted = 10;
+}
+
+// BuildDetails contains comprehensive information about a build
+message BuildDetails {
+  string id = 1;
+  string customer = 2;
+  string project_name = 3;
+  string target_image = 4;
+  string machine = 5;
+  BuildState status = 6;
+  int32 exit_code = 7;
+
+  // Directories
+  string build_dir = 8;
+  string deploy_dir = 9;
+  string log_file_plain = 10;
+  string log_file_jsonl = 11;
+
+  // Metadata
+  string config_file = 12;
+  string config_snapshot = 13;
+  string user = 14;
+  string host = 15;
+
+  // Timing (Unix timestamps in seconds)
+  int64 created_at = 16;
+  int64 started_at = 17;
+  int64 completed_at = 18;
+  int32 duration_seconds = 19;
+
+  // Soft delete
+  bool deleted = 20;
+  int64 deleted_at = 21;
+
+  // Error tracking
+  string error_message = 22;
+
+  // Artifacts summary
+  int32 artifact_count = 23;
+  int64 total_artifact_size = 24;
 }
 
 // BuildState represents the current state of a build
 enum BuildState {
-  BUILD_STATE_UNKNOWN = 0;
+  BUILD_STATE_UNSPECIFIED = 0;
   BUILD_STATE_QUEUED = 1;
   BUILD_STATE_PREPARING = 2;
   BUILD_STATE_BUILDING = 3;
@@ -120,14 +174,78 @@ message CancelResult {
 
 // ListBuildsRequest requests a list of builds
 message ListBuildsRequest {
-  // Filter by state (empty = all states)
-  repeated BuildState states = 1;
+  // Filter by customer (empty = all customers)
+  string customer = 1;
 
-  // Maximum number of results
-  int32 limit = 2;
+  // Include deleted builds
+  bool include_deleted = 2;
+
+  // Filter by state (empty = all states)
+  repeated BuildState states = 3;
+
+  // Maximum number of results (0 = no limit)
+  int32 limit = 4;
 }
 
 // BuildsList contains a list of builds
 message BuildsList {
-  repeated BuildStatus builds = 1;
+  repeated BuildDetails builds = 1;
+  int32 total_count = 2;
+}
+
+// GetBuildRequest requests details for a specific build
+message GetBuildRequest {
+  string build_id = 1;
+}
+
+// DeleteBuildRequest marks a build as deleted (soft delete)
+message DeleteBuildRequest {
+  string build_id = 1;
+}
+
+// DeleteBuildResponse indicates the result of a delete operation
+message DeleteBuildResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// PurgeBuildsRequest permanently removes deleted builds
+message PurgeBuildsRequest {
+  // Only purge builds older than this many days
+  int32 older_than_days = 1;
+
+  // Maximum number of builds to purge (0 = no limit)
+  int32 limit = 2;
+
+  // Dry run - return what would be deleted without actually deleting
+  bool dry_run = 3;
+}
+
+// PurgeBuildsResponse contains the result of a purge operation
+message PurgeBuildsResponse {
+  int32 purged_count = 1;
+  repeated string purged_build_ids = 2;
+  string message = 3;
+}
+
+// GetBuildArtifactsRequest requests artifacts for a specific build
+message GetBuildArtifactsRequest {
+  string build_id = 1;
+}
+
+// BuildArtifactsList contains all artifacts from a build
+message BuildArtifactsList {
+  string build_id = 1;
+  repeated BuildArtifact artifacts = 2;
+}
+
+// BuildArtifact represents a file produced by a build
+message BuildArtifact {
+  int64 id = 1;
+  string build_id = 2;
+  string artifact_path = 3;
+  string artifact_type = 4;
+  int64 size_bytes = 5;
+  string checksum = 6;
+  int64 created_at = 7; // Unix timestamp
 }
