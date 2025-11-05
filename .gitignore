@@ -1,5 +1,6 @@
-# Generated code
-gen/
+# Generated code (allow gen/go for Go module consumers)
+gen/ts/
+gen/js/
 
 # Dependencies
 node_modules/
